@@ -4,7 +4,16 @@ from readability import Document
 
 def extract_readability(html):
     summary_html = Document(html).summary()
-    return BeautifulSoup(summary_html, "html.parser").get_text(separator=" ", strip=True)
+    soup = BeautifulSoup(summary_html, "html.parser")
+
+    blocks = soup.find_all(["p", "li", "h1", "h2", "h3", "h4"])
+    texts = [b.get_text(separator=" ", strip=True) for b in blocks]
+    texts = [t for t in texts if t]
+
+    if not texts:
+        return soup.get_text(separator=" ", strip=True)
+
+    return "\n\n".join(texts)
 
 
 def link_density(tag):

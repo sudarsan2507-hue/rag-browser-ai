@@ -4,6 +4,7 @@ from interface.cli import get_query
 from browser.navigator import search_google
 from retrieval.extractor import fetch_all
 from retrieval.chunker import chunk_text
+from rag.embedder import embed_chunks
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -20,14 +21,26 @@ def main():
 
     print(f"\nFetched {len(records)} pages:\n")
 
-    for i, r in enumerate(records, 1):
+    all_chunks = []
+    chunk_counts = []
+
+    for r in records:
         chunks = chunk_text(r["content"])
-        preview = chunks[0][:200].replace("\n", " ") if chunks else ""
+        chunk_counts.append(len(chunks))
+        all_chunks.extend(chunks)
+
+    embeddings = embed_chunks(all_chunks)
+    print(f"Embedded {len(all_chunks)} chunks -> vectors of dimension {embeddings.shape[1]}\n")
+
+    offset = 0
+    for i, (r, count) in enumerate(zip(records, chunk_counts), 1):
+        preview = all_chunks[offset][:200].replace("\n", " ") if count else ""
 
         print(f"{i}. {r['title']}")
         print(f"   {r['url']}")
-        print(f"   {len(r['content'])} chars extracted -> {len(chunks)} chunks")
+        print(f"   {len(r['content'])} chars extracted -> {count} chunks")
         print(f"   Chunk 1 preview: {preview}...\n")
+        offset += count
 
 if __name__ == "__main__":
     main()

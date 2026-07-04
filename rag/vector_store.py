@@ -2,7 +2,7 @@ import uuid
 import chromadb
 
 client = chromadb.PersistentClient(path="chroma_data")
-collection = client.get_or_create_collection(name="rag_data")
+collection = client.get_or_create_collection(name="rag_data", metadata={"hnsw:space": "cosine"})
 
 
 def add_chunks(chunks, embeddings, metadatas, target_collection=None):
@@ -27,7 +27,7 @@ def search(query_embedding, n_results=3, target_collection=None):
 if __name__ == "__main__":
     from rag.embedder import embed_chunks
 
-    demo_collection = client.get_or_create_collection(name="demo_data")
+    demo_collection = client.get_or_create_collection(name="demo_data", metadata={"hnsw:space": "cosine"})
 
     documents = [
         "Machine learning is a subset of AI",

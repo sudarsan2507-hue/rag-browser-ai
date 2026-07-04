@@ -1,6 +1,10 @@
+from retrieval.cleaner import extract_readability
+
+
 def fetch_page_content(page, url):
     page.goto(url, wait_until="domcontentloaded", timeout=15000)
-    return page.locator("body").inner_text()
+    html = page.content()
+    return extract_readability(html)
 
 
 def fetch_all(page, results):

@@ -1,4 +1,10 @@
 from bs4 import BeautifulSoup
+from readability import Document
+
+
+def extract_readability(html):
+    summary_html = Document(html).summary()
+    return BeautifulSoup(summary_html, "html.parser").get_text(separator=" ", strip=True)
 
 
 def link_density(tag):

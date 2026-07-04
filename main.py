@@ -7,6 +7,7 @@ from retrieval.chunker import chunk_text
 from rag.embedder import embed_chunks
 from rag.vector_store import add_chunks
 from rag.retriever import retrieve
+from llm.generator import generate_answer
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -46,11 +47,14 @@ def main():
         print(f"   {len(r['content'])} chars extracted -> {len(chunks)} chunks")
         print(f"   Chunk 1 preview: {preview}...\n")
 
-    print("Top matches for your query:\n")
-    for i, (chunk, meta, distance) in enumerate(retrieve(query, k=3), 1):
-        preview = chunk[:200].replace("\n", " ")
-        print(f"  [{i}] ({distance:.4f}) {meta['title']}")
-        print(f"      {preview}...\n")
+    retrieved = retrieve(query, k=3)
+    answer = generate_answer(query, retrieved)
+
+    print("Answer:\n")
+    print(answer)
+    print("\nSources:")
+    for i, (_, meta, _distance) in enumerate(retrieved, 1):
+        print(f"  [{i}] {meta['title']} - {meta['url']}")
 
 if __name__ == "__main__":
     main()

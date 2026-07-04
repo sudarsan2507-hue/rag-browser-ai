@@ -5,6 +5,7 @@ from browser.navigator import search_google
 from retrieval.extractor import fetch_all
 from retrieval.chunker import chunk_text
 from rag.embedder import embed_chunks
+from rag.vector_store import add_chunks
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -21,26 +22,28 @@ def main():
 
     print(f"\nFetched {len(records)} pages:\n")
 
-    all_chunks = []
-    chunk_counts = []
+    records_chunks = [(r, chunk_text(r["content"])) for r in records]
 
-    for r in records:
-        chunks = chunk_text(r["content"])
-        chunk_counts.append(len(chunks))
-        all_chunks.extend(chunks)
+    all_chunks = [c for _, chunks in records_chunks for c in chunks]
+    metadatas = [
+        {"title": r["title"], "url": r["url"]}
+        for r, chunks in records_chunks
+        for _ in chunks
+    ]
 
     embeddings = embed_chunks(all_chunks)
     print(f"Embedded {len(all_chunks)} chunks -> vectors of dimension {embeddings.shape[1]}\n")
 
-    offset = 0
-    for i, (r, count) in enumerate(zip(records, chunk_counts), 1):
-        preview = all_chunks[offset][:200].replace("\n", " ") if count else ""
+    add_chunks(all_chunks, embeddings, metadatas)
+    print(f"Stored {len(all_chunks)} chunks in the persistent vector store.\n")
+
+    for i, (r, chunks) in enumerate(records_chunks, 1):
+        preview = chunks[0][:200].replace("\n", " ") if chunks else ""
 
         print(f"{i}. {r['title']}")
         print(f"   {r['url']}")
-        print(f"   {len(r['content'])} chars extracted -> {count} chunks")
+        print(f"   {len(r['content'])} chars extracted -> {len(chunks)} chunks")
         print(f"   Chunk 1 preview: {preview}...\n")
-        offset += count
 
 if __name__ == "__main__":
     main()

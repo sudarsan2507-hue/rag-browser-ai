@@ -1,4 +1,7 @@
 def split_oversized(paragraph, max_chars, overlap):
+    if overlap >= max_chars:
+        raise ValueError("overlap must be smaller than max_chars")
+
     chunks = []
     start = 0
 

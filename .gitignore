@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 chroma_data/
 lancedb_data/
+.pytest_cache/

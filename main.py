@@ -1,7 +1,7 @@
 import sys
 from playwright.sync_api import sync_playwright
 from interface.cli import get_query
-from browser.navigator import search_google
+from browser.navigator import search_google, launch_browser
 from retrieval.extractor import fetch_all
 from retrieval.chunker import chunk_text
 from rag.embedder import embed_chunks
@@ -15,7 +15,7 @@ def main():
     query = get_query()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=100)
+        browser = launch_browser(p)
         page = browser.new_page()
 
         try:

@@ -1,6 +1,7 @@
 import sys
 import trafilatura
 from playwright.sync_api import sync_playwright
+from browser.navigator import launch_browser
 from retrieval.cleaner import extract_paragraphs, extract_readability
 
 # Same 5 URLs returned by the Phase 2 test run, fixed here for apples-to-apples comparison.
@@ -21,7 +22,7 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=100)
+        browser = launch_browser(p)
         page = browser.new_page()
 
         for url in URLS:

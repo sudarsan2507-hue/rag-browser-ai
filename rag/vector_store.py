@@ -16,12 +16,16 @@ def add_chunks(chunks, embeddings, metadatas, target_collection=None):
     )
 
 
-def search(query_embedding, n_results=3, target_collection=None):
+def search(query_embedding, n_results=3, target_collection=None, where=None):
     target_collection = target_collection or collection
-    return target_collection.query(
-        query_embeddings=[query_embedding.tolist()],
-        n_results=n_results
-    )
+    kwargs = {
+        "query_embeddings": [query_embedding.tolist()],
+        "n_results": n_results
+    }
+    if where is not None:
+        kwargs["where"] = where
+
+    return target_collection.query(**kwargs)
 
 
 if __name__ == "__main__":

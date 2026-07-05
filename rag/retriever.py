@@ -2,9 +2,9 @@ from rag.embedder import embed_chunks
 from rag.vector_store import search
 
 
-def retrieve(query, k=3):
+def retrieve(query, k=3, where=None):
     query_embedding = embed_chunks([query])[0]
-    results = search(query_embedding, n_results=k)
+    results = search(query_embedding, n_results=k, where=where)
 
     chunks = results["documents"][0]
     metadatas = results["metadatas"][0]

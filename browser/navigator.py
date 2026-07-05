@@ -1,4 +1,11 @@
+import os
 from urllib.parse import quote_plus
+
+
+def launch_browser(playwright):
+    headless = os.environ.get("RAG_HEADLESS", "false").lower() == "true"
+    slow_mo = int(os.environ.get("RAG_SLOW_MO", "100"))
+    return playwright.chromium.launch(headless=headless, slow_mo=slow_mo)
 
 
 def search_google(page, query):

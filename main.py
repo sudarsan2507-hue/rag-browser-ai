@@ -7,19 +7,24 @@ from retrieval.chunker import chunk_text
 from rag.embedder import embed_chunks
 from rag.vector_store import add_chunks
 from rag.retriever import retrieve
-from llm.generator import generate_answer
+from llm.generator import generate_answer, ensure_ollama_ready
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    ensure_ollama_ready()
     query = get_query()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, slow_mo=100)
         page = browser.new_page()
 
-        results = search_google(page, query)
-        records = fetch_all(page, results)
+        try:
+            results = search_google(page, query)
+        except Exception as e:
+            print(f"Search failed: {e}")
+            results = []
 
+        records = fetch_all(page, results) if results else []
         browser.close()
 
     print(f"\nFetched {len(records)} pages:\n")
@@ -32,6 +37,10 @@ def main():
         for r, chunks in records_chunks
         for _ in chunks
     ]
+
+    if not all_chunks:
+        print("No content could be extracted from any result. Try a different query.")
+        return
 
     embeddings = embed_chunks(all_chunks)
     print(f"Embedded {len(all_chunks)} chunks -> vectors of dimension {embeddings.shape[1]}\n")

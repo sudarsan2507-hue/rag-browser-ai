@@ -1,14 +1,54 @@
+import re
+
+SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?])\s+")
+
+
+def raw_windows(text, max_chars, overlap):
+    chunks = []
+    start = 0
+
+    while start < len(text):
+        end = start + max_chars
+        chunks.append(text[start:end])
+        start = end - overlap
+
+    return chunks
+
+
+def pack_sentences(sentences, max_chars):
+    chunks = []
+    buffer = ""
+
+    for sentence in sentences:
+        if not buffer:
+            buffer = sentence
+        elif len(buffer) + 1 + len(sentence) <= max_chars:
+            buffer += " " + sentence
+        else:
+            chunks.append(buffer)
+            buffer = sentence
+
+    if buffer:
+        chunks.append(buffer)
+
+    return chunks
+
+
 def split_oversized(paragraph, max_chars, overlap):
     if overlap >= max_chars:
         raise ValueError("overlap must be smaller than max_chars")
 
-    chunks = []
-    start = 0
+    sentences = SENTENCE_BOUNDARY.split(paragraph)
 
-    while start < len(paragraph):
-        end = start + max_chars
-        chunks.append(paragraph[start:end])
-        start = end - overlap
+    if len(sentences) == 1:
+        return raw_windows(paragraph, max_chars, overlap)
+
+    chunks = []
+    for chunk in pack_sentences(sentences, max_chars):
+        if len(chunk) > max_chars:
+            chunks.extend(raw_windows(chunk, max_chars, overlap))
+        else:
+            chunks.append(chunk)
 
     return chunks
 
